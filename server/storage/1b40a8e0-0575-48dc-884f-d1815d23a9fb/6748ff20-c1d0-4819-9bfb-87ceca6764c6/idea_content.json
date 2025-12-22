@@ -1,0 +1,5 @@
+{
+  "title": "Cryo-Guardian AI: Predictive Logistics Platform",
+  "description": "A specialized, machine learning-driven logistics management platform designed exclusively for personalized regenerative therapies (ATMPs). It ingests real-time data from IoT trackers embedded in cryo-shippers (temperature, vibration, GPS) and combines it with external variables (traffic, weather patterns) to dynamically optimize routing and scheduling. Its core value is predictive failure analysis: the AI constantly models the remaining viable time-window of the material under current conditions and, if a deviation exceeds a safety threshold, automatically executes pre-approved fail-safe protocols (e.g., initiating reroute to the nearest approved ultra-low temperature depot or alerting rapid response teams), minimizing the risk of costly material loss (Finding 1 & 2).",
+  "createdAt": "2025-12-22T04:03:19.680Z"
+}

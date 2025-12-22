@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15
+    container_name: idea_pipeline_db
+    restart: always
+    environment:
+      POSTGRES_DB: ideadb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  server:
+    build: 
+      context: ./server
+    container_name: idea_pipeline_server
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=ideadb
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+    depends_on:
+      - db
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./server/storage:/usr/src/app/storage
+
+  client:
+    build: 
+      context: ./client
+    container_name: idea_pipeline_client
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+
+volumes:
+  postgres_data:

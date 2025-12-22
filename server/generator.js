@@ -55,13 +55,13 @@ async function generate(findings, context, apiKey) {
         INSTRUCTIONS:
         1. Analyze the findings to identify gaps, trends, or opportunities.
         2. Generate 3 distinct, innovative ideas that leverage these findings.
-        3. For each idea, provide a Catchy Title, a Detailed Description of how it works and the value proposition, Feasibility (Low/Medium/High), and Impact (Low/Medium/High).
+        3. For each idea, provide a Catchy AI Name, a Detailed Description of how it works and the value proposition, Feasibility (Low/Medium/High), and Impact (Low/Medium/High).
         4. Reference which finding inspired the idea if applicable.
         
         OUTPUT FORMAT (JSON ARRAY):
         [
             {
-                "title": "...",
+                "aiName": "AI Suggested Name",
                 "description": "...",
                 "feasibility": "High",
                 "impact": "Medium", 
