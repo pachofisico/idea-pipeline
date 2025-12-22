@@ -1,0 +1,347 @@
+:root {
+  --sidebar-bg: #2d3e50;
+  --sidebar-hover: #3d5166;
+  --content-bg: #f5f5f0;
+  /* Paper-like cream */
+  --text-main: #334155;
+  --primary: #8b5cf6;
+  --secondary: #ec4899;
+  --text-light: #94a3b8;
+  --accent: #d4d4cc;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Gochi+Hand&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--sidebar-bg);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background-color: var(--sidebar-bg);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 0;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-profile {
+  padding: 0 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #cbd5e1;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background-color: var(--sidebar-hover);
+  color: white;
+}
+
+.nav-item i {
+  font-size: 1.2rem;
+}
+
+.menu-divider {
+  margin: 1rem 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+}
+
+/* Main Content Area */
+.main-layout {
+  flex-grow: 1;
+  background-color: var(--content-bg);
+  background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+  /* Paper texture overlay */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(5px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+header h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.8rem;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.content-container {
+  padding: 2rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Hand-drawn elements */
+.hand-drawn-card {
+  background: white;
+  border: 2px solid #334e;
+  border-radius: 4px;
+  box-shadow: 2px 2px 0px #334;
+  padding: 1.5rem;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.hand-drawn-card:hover {
+  transform: rotate(-1deg) scale(1.02);
+}
+
+.card-title-drawn {
+  font-family: 'Gochi Hand', cursive;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Grid for Portfolio */
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.idea-card {
+  background: #fffef2;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.idea-thumb {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #eee;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.play-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+}
+
+.add-btn {
+  border: 2px dashed var(--text-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  cursor: pointer;
+  min-height: 200px;
+}
+
+.add-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.tab.active {
+  color: var(--text-main);
+  border-bottom: 2px solid var(--primary);
+  font-weight: 600;
+}
+
+/* Protect Section Cards */
+.protect-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.protect-card {
+  background: white;
+  border: 2px solid #334;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.protect-card:hover {
+  background: #f8fafc;
+  transform: translateY(-5px);
+}
+
+.protect-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+/* Utilities */
+.status-pill {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  background: #e2e8f0;
+}
+
+.btn-primary-drawn {
+  font-family: 'Gochi Hand', cursive;
+  background: #fffbeb;
+  border: 2px solid #334;
+  padding: 0.8rem 2rem;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #334;
+  transition: all 0.1s;
+}
+
+.btn-primary-drawn:active {
+  box-shadow: 1px 1px 0px #334;
+  transform: translate(2px, 2px);
+}
+
+.sketch-area {
+  background: white;
+  border: 2px solid #334;
+  border-radius: 4px;
+}
+
+.status-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  color: white;
+  text-align: center;
+}
+
+.icon-btn {
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.input-drawn {
+  font-family: 'Gochi Hand', cursive;
+  font-size: 1.2rem;
+  border: none;
+  background: transparent;
+  width: 100%;
+  border-bottom: 1px dashed #334;
+  padding: 0.5rem;
+}
+
+.input-drawn:focus {
+  outline: none;
+  border-bottom-style: solid;
+}
