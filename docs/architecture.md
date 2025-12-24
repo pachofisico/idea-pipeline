@@ -15,9 +15,11 @@ El sistema sigue una arquitectura cliente-servidor tradicional, potenciada por u
     *   **PostgreSQL**: Datos estructurados (Ideas, Hallazgos, Usuarios).
     *   **Local Storage**: Archivos binarios (Imágenes, Videos) organizados por `/storage/{userId}/{ideaId}/`.
 
-## Diagrama de Clases (Mermaid)
+Para visualizar este diagrama, se recomienda usar la extensión **Markdown Mermaid** (`mjbvz.vscode-markdown-mermaid`) en VS Code. 
 
-Para visualizar este diagrama, se recomienda usar la extensión **Markdown Mermaid** en VS Code o visualizarlo en GitHub. Mermaid es una alternativa moderna a PlantUML que se integra nativamente en Markdown.
+> **Nota**: Si no ves el diagrama, abre la vista de Extensiones (**Ctrl+Shift+X**), busca `@recommended` e instala las sugerencias del proyecto.
+
+*Fallback: Puedes copiar el código de abajo y pegarlo en el [Mermaid Live Editor](https://mermaid.live/) para verlo online.*
 
 ```mermaid
 classDiagram

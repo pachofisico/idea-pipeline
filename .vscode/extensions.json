@@ -1,7 +1,7 @@
 {
     "recommendations": [
+        "mjbvz.vscode-markdown-mermaid",
         "bpmn-io.mermaid-editor",
-        "shane-walker.mermaid-preview",
-        "mjbvz.vscode-markdown-mermaid"
+        "ms-azuretools.vscode-docker"
     ]
 }
