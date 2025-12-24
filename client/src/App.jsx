@@ -17,10 +17,13 @@ function App() {
   const [status, setStatus] = useState('idle')
   const [currentFolder, setCurrentFolder] = useState('General')
   const [capturedSketch, setCapturedSketch] = useState(null)
+  const [expandedFolders, setExpandedFolders] = useState(['General']) // Para el explorador
+  const [journalNote, setJournalNote] = useState('') // Nota temporal para la bitácora
 
   // User/Portafolio State
   const [user, setUser] = useState(null)
   const [portfolio, setPortfolio] = useState([])
+  const [viewFolder, setViewFolder] = useState('Todos') // Filtro para el grid
   const [selectedIdea, setSelectedIdea] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null) // Lightbox: { url, index }
 
@@ -141,7 +144,7 @@ function App() {
     } catch (err) { alert('Error salvando') }
   }
 
-  const handleUpdateIdea = async () => {
+  const handleFullEditSubmit = async () => {
     try {
       const sketchData = editCanvasRef.current ? editCanvasRef.current.getSaveData() : selectedIdea.sketch;
       await axios.put(`http://localhost:3000/api/ideas/${selectedIdea.id}`, {
@@ -184,6 +187,22 @@ function App() {
     } catch (err) { console.error(err) } finally { setStatus('idle') }
   }
 
+  const handleUpdateIdea = async (id, updates) => {
+    setStatus('saving')
+    try {
+      await axios.put(`http://localhost:3000/api/ideas/${id}`, updates)
+      await openIdeaDetail(id, true)
+      await fetchPortfolio()
+    } catch (err) { console.error(err) } finally { setStatus('idle') }
+  }
+
+  const handleSaveJournal = async () => {
+    if (!journalNote.trim()) return
+    const newJournal = (selectedIdea.journal || '') + `\n\n[${new Date().toLocaleString()}]\n${journalNote}`
+    await handleUpdateIdea(selectedIdea.id, { journal: newJournal })
+    setJournalNote('')
+  }
+
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files)
     if (files.length === 0) return
@@ -206,8 +225,8 @@ function App() {
     }
   }
 
-  const NavItem = ({ id, label, icon }) => (
-    <div className={`nav-item ${activeView === id ? 'active' : ''}`} onClick={() => setActiveView(id)}>
+  const NavItem = ({ id, label, icon, onClick }) => (
+    <div className={`nav-item ${activeView === id ? 'active' : ''}`} onClick={onClick || (() => setActiveView(id))}>
       <span>{icon}</span><span>{label}</span>
     </div>
   )
@@ -219,7 +238,33 @@ function App() {
           <div className="user-name">{user?.name || "Cargando..."}</div>
         </div>
         <nav className="nav-menu">
-          <NavItem id="portafolio" label="Portafolio" icon="📁" />
+          <div className="nav-item-group">
+            <NavItem id="portafolio" label="Portafolio" icon="📁" onClick={() => { setActiveView('portafolio'); setViewFolder('Todos'); }} />
+            <div className="sidebar-explorer">
+              {['General', 'Proyectos IA', 'Hardware', 'Software'].map(folder => (
+                <div key={folder} className="explorer-folder">
+                  <div
+                    className="folder-header"
+                    onClick={() => {
+                      setExpandedFolders(prev => prev.includes(folder) ? prev.filter(f => f !== folder) : [...prev, folder]);
+                      if (activeView === 'portafolio') setViewFolder(folder);
+                    }}
+                  >
+                    {expandedFolders.includes(folder) ? '📂' : '📁'} {folder}
+                  </div>
+                  {expandedFolders.includes(folder) && (
+                    <div className="folder-content">
+                      {portfolio.filter(item => item.folder === folder && !item.isTrash).map(item => (
+                        <div key={item.id} className={`explorer-item ${selectedIdea?.id === item.id ? 'active' : ''}`} onClick={() => openIdeaDetail(item.id)}>
+                          💡 {item.title}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
           <NavItem id="nueva" label="Nueva Idea" icon="🚀" />
           <NavItem id="proteger" label="Proteger" icon="✒️" />
           <NavItem id="prototipar" label="Prototipar" icon="🛠️" />
@@ -242,18 +287,23 @@ function App() {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={() => fetchPortfolio()} className="small-button" style={{ background: '#f1f5f9' }}>📁 Todos</button>
+                  <button onClick={() => setViewFolder('Todos')} className="small-button" style={{ background: viewFolder === 'Todos' ? '#f1f5f9' : 'white' }}>📁 Todos</button>
                   {['General', 'Proyectos IA', 'Hardware', 'Software'].map(folder => (
-                    <button key={folder} onClick={() => axios.get(`http://localhost:3000/api/ideas?folder=${folder}`).then(res => setPortfolio(res.data))} className="small-button" style={{ background: 'white' }}>
+                    <button key={folder} onClick={() => setViewFolder(folder)} className="small-button" style={{ background: viewFolder === folder ? '#e2e8f0' : 'white' }}>
                       {folder}
                     </button>
                   ))}
                 </div>
-                <button onClick={() => axios.get('http://localhost:3000/api/ideas?trashed=true').then(res => setPortfolio(res.data))} className="small-button" style={{ background: '#fee2e2' }}>🗑️ Papelera</button>
+                <button onClick={() => setViewFolder('Trash')} className="small-button" style={{ background: viewFolder === 'Trash' ? '#fee2e2' : '#fff5f5' }}>🗑️ Papelera</button>
               </div>
 
               <div className="portfolio-grid">
-                {portfolio.map(item => (
+                {portfolio.filter(item => {
+                  if (viewFolder === 'Trash') return item.isTrash;
+                  if (item.isTrash) return false;
+                  if (viewFolder === 'Todos') return true;
+                  return item.folder === viewFolder;
+                }).map(item => (
                   <div key={item.id} className="idea-card" onClick={() => openIdeaDetail(item.id)} style={{ opacity: item.isTrash ? 0.6 : 1 }}>
                     <div className="idea-thumb">
                       {item.thumb ? (
@@ -309,7 +359,18 @@ function App() {
                 <button onClick={() => setActiveView('editar')} className="small-button" style={{ background: '#dcfce7' }}>Editar ✏️</button>
               </div>
 
-              <header style={{ textAlign: 'left', borderBottom: '2px dashed #ccc', paddingBottom: '1rem' }}>
+              <header style={{ textAlign: 'left', borderBottom: '2px dashed #ccc', paddingBottom: '1rem', position: 'relative' }}>
+                <div style={{ position: 'absolute', right: 0, top: 0 }}>
+                  <label style={{ fontSize: '0.8rem', marginRight: '10px' }}>📁 Mover a:</label>
+                  <select
+                    className="input-drawn"
+                    value={selectedIdea.folder}
+                    onChange={(e) => handleUpdateIdea(selectedIdea.id, { folder: e.target.value })}
+                    style={{ width: '150px', fontSize: '0.8rem' }}
+                  >
+                    {['General', 'Proyectos IA', 'Hardware', 'Software'].map(f => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
                 <h2 className="card-title-drawn" style={{ fontSize: '2.5rem', margin: 0 }}>{selectedIdea.title}</h2>
                 {selectedIdea.subtitle && <h3 style={{ fontSize: '1.2rem', opacity: 0.7, margin: '5px 0' }}>{selectedIdea.subtitle}</h3>}
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '10px' }}>
@@ -391,6 +452,23 @@ function App() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+
+              <div className="journal-section" style={{ marginTop: '3rem', borderTop: '2px solid #eee', paddingTop: '2rem' }}>
+                <h4 className="card-title-drawn" style={{ fontSize: '1.5rem' }}>📓 Bitácora de Evolución</h4>
+                <div className="journal-history" style={{ background: '#fff', padding: '1rem', borderRadius: '10px', maxHeight: '300px', overflowY: 'auto', marginBottom: '1rem', whiteSpace: 'pre-wrap', border: '1px solid #eee' }}>
+                  {selectedIdea.journal || "No hay registros aún en la bitácora."}
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <textarea
+                    className="input-drawn"
+                    placeholder="Escribe una nueva entrada en la bitácora..."
+                    value={journalNote}
+                    onChange={e => setJournalNote(e.target.value)}
+                    style={{ flex: 1, minHeight: '80px' }}
+                  />
+                  <button className="small-button" onClick={handleSaveJournal} style={{ alignSelf: 'flex-end', background: '#e0f2fe' }}>Anotar ✍️</button>
                 </div>
               </div>
             </div>
@@ -530,7 +608,7 @@ function App() {
               <div className="sketch-area">
                 <CanvasDraw ref={editCanvasRef} saveData={selectedIdea.sketch} canvasWidth={700} canvasHeight={300} />
               </div>
-              <button className="btn-primary-drawn" onClick={handleUpdateIdea}>Guardar Cambios</button>
+              <button className="btn-primary-drawn" onClick={handleFullEditSubmit}>Guardar Cambios</button>
               <button onClick={() => setActiveView('detalle')} className="small-button">Cancelar</button>
             </div>
           )}

@@ -40,6 +40,7 @@ classDiagram
         +String folder
         +Boolean isTrash
         +String patentDraft
+        +String journal
         +Integer score
         +findings() Finding[]
         +save()

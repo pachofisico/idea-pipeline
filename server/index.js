@@ -114,12 +114,12 @@ app.post('/api/ideas', async (req, res) => {
 
 // Update Idea
 app.put('/api/ideas/:id', async (req, res) => {
-    const { title, subtitle, description, sketch, status, strategy, folder, isTrash, patentDraft } = req.body;
+    const { title, subtitle, description, sketch, status, strategy, folder, isTrash, patentDraft, journal } = req.body;
     try {
         const idea = await Idea.findByPk(req.params.id);
         if (!idea) return res.status(404).json({ error: 'Not found' });
 
-        await idea.update({ title, subtitle, description, sketch, status, strategy, folder, isTrash, patentDraft });
+        await idea.update({ title, subtitle, description, sketch, status, strategy, folder, isTrash, patentDraft, journal });
 
         // Update JSON file
         await storageManager.saveIdeaMetadata(idea.userId, idea.id, {

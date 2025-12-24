@@ -81,6 +81,9 @@ const Idea = sequelize.define('Idea', {
     },
     patentDraft: {
         type: DataTypes.TEXT,
+    },
+    journal: {
+        type: DataTypes.TEXT,
     }
 });
 

@@ -6,7 +6,8 @@ Sistema inteligente de generación y gestión de ideas de innovación, diseñado
 
 - **Investigación Automatizada**: Búsqueda en tiempo real de tendencias y vacíos de mercado utilizando DuckDuckGo.
 - **Generación de Ideas con Gemini**: Transformación de hallazgos en conceptos de producto con análisis de viabilidad e impacto.
-- **Portafolio Inteligente**: Organización por carpetas (General, Hardware, Software, IA) y sistema de papelera de reciclaje.
+- **Gestiuón de Directorios**: Organización jerárquica con explorador lateral y capacidad de mover ideas entre carpetas.
+- **Bitácora de Evolución**: Historial cronológico de notas y avances para cada idea.
 - **Bocetado Digital**: Lienzo integrado para capturar la visión visual inicial de la idea.
 - **Redacción de Patentes con IA**: Generación automática de borradores técnicos de patentes utilizando Gemini 2.0.
 - **Generación de Imágenes**: Creación de visualizaciones realistas del producto (estética Nanobanana) usando integración con Flux (Pollinations.ai).
