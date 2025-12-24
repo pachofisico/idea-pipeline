@@ -40,4 +40,21 @@ async function generateRandomTopic(apiKey) {
     return result.response.text().trim();
 }
 
-module.exports = { processRequest, generateIdeasDetails, generateRandomTopic };
+async function generatePatent(idea, apiKey) {
+    return await generator.draftPatent(idea, apiKey);
+}
+
+async function generateVisualPrompt(idea, apiKey) {
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.0-flash" });
+    const promptGen = `You are a professional Creative Director. Create a highly detailed visual prompt for an AI image generator (Flux/SDXL). 
+    The product is: "${idea.title}: ${idea.subtitle}". 
+    Invention Details: ${idea.description}.
+    Target Aesthetic: "Nanobanana futuristic, ultra-slick product photography, high-end materials, cinematic lighting, 8k, bokeh background, clean studio setting".
+    Return ONLY the prompt text in English, starting with "A professional product photograph of...".`;
+    const result = await model.generateContent(promptGen);
+    return result.response.text().trim();
+}
+
+module.exports = { processRequest, generateIdeasDetails, generateRandomTopic, generatePatent, generateVisualPrompt };

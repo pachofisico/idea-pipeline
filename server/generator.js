@@ -110,4 +110,33 @@ async function generate(findings, context, apiKey) {
     }
 }
 
-module.exports = { generate };
+async function draftPatent(idea, apiKey) {
+    console.log(`[Gemini] Drafting patent for: ${idea.title}`);
+    if (!apiKey) throw new Error("API Key missing");
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.0-flash" });
+
+    const prompt = `
+    You are an expert Patent Attorney. Draft a comprehensive patent application for the following invention:
+    
+    TITLE: ${idea.title}
+    SUBTITLE: ${idea.subtitle}
+    DESCRIPTION: ${idea.description}
+    ANALYSIS: ${idea.analysis}
+    
+    The patent should include:
+    1. FIELD OF THE INVENTION: A brief description of the technical area.
+    2. BACKGROUND: The problem this invention solves.
+    3. SUMMARY: Detailed technical solution.
+    4. DETAILED DESCRIPTION: How it works in practice, components, and logic.
+    5. CLAIMS: At least 3 specific technical claims.
+    
+    FORMAT: Use a professional, formal, and technical tone. Return ONLY the drafted text.
+    `;
+
+    const result = await generateContentWithRetry(model, prompt);
+    return result.response.text();
+}
+
+module.exports = { generate, draftPatent };

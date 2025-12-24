@@ -16,6 +16,7 @@ function App() {
   const [generatedIdeas, setGeneratedIdeas] = useState([])
   const [status, setStatus] = useState('idle')
   const [currentFolder, setCurrentFolder] = useState('General')
+  const [capturedSketch, setCapturedSketch] = useState(null)
 
   // User/Portafolio State
   const [user, setUser] = useState(null)
@@ -73,6 +74,11 @@ function App() {
     setStatus('researching')
     setFindings([])
     setSelectedIds([])
+
+    if (canvasRef.current) {
+      setCapturedSketch(canvasRef.current.getSaveData())
+    }
+
     try {
       const query = `${ideaTitle} ${ideaDescription}`
       const response = await axios.post('http://localhost:3000/api/start', { query })
@@ -123,13 +129,13 @@ function App() {
 
   const handleSaveIdea = async (idea) => {
     try {
-      const sketchData = canvasRef.current ? canvasRef.current.getSaveData() : null;
       await axios.post('http://localhost:3000/api/ideas', {
         ...idea,
         userId: user.id,
-        sketch: sketchData,
+        sketch: capturedSketch,
         findings: findings.filter(f => selectedIds.includes(f.id))
       })
+      setCapturedSketch(null)
       fetchPortfolio()
       setActiveView('portafolio')
     } catch (err) { alert('Error salvando') }
@@ -147,12 +153,34 @@ function App() {
     } catch (err) { alert('Error actualizando') }
   }
 
-  const openIdeaDetail = async (id) => {
+  const handleAIDraftPatent = async () => {
+    setStatus('drafting')
+    try {
+      const res = await axios.post(`http://localhost:3000/api/ideas/${selectedIdea.id}/draft-patent`)
+      setSelectedIdea(prev => ({ ...prev, patentDraft: res.data.draft }))
+      alert("Patente redactada por IA!")
+    } catch (err) { alert("Error redactando patente") }
+    finally { setStatus('idle') }
+  }
+
+  const handleAIGenerateImage = async () => {
+    setStatus('generating_image')
+    try {
+      const res = await axios.post(`http://localhost:3000/api/ideas/${selectedIdea.id}/generate-image`)
+      if (res.data.success) {
+        openIdeaDetail(selectedIdea.id, true)
+        alert("Imagen generada por IA! ✨")
+      }
+    } catch (err) { alert("Error generando imagen") }
+    finally { setStatus('idle') }
+  }
+
+  const openIdeaDetail = async (id, skipViewChange = false) => {
     setStatus('loading')
     try {
       const res = await axios.get(`http://localhost:3000/api/ideas/${id}`)
       setSelectedIdea(res.data)
-      setActiveView('detalle')
+      if (!skipViewChange) setActiveView('detalle')
     } catch (err) { console.error(err) } finally { setStatus('idle') }
   }
 
@@ -233,8 +261,19 @@ function App() {
                       ) : item.videoThumb ? (
                         <video src={`http://localhost:3000${item.videoThumb}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} muted />
                       ) : item.sketch ? (
-                        <div style={{ transform: 'scale(0.4)', transformOrigin: 'top left', pointerEvents: 'none' }}>
-                          <CanvasDraw disabled saveData={item.sketch} canvasWidth={350} canvasHeight={200} hideGrid hideInterface />
+                        <div style={{ width: '100%', height: '100%', overflow: 'hidden', background: '#fff', display: 'block' }}>
+                          <div style={{ transform: 'scale(0.4)', transformOrigin: 'top left', pointerEvents: 'none' }}>
+                            <CanvasDraw
+                              key={`thumb-${item.id}`}
+                              disabled
+                              saveData={item.sketch}
+                              canvasWidth={700}
+                              canvasHeight={300}
+                              hideGrid
+                              hideInterface
+                              immediateLoading={true}
+                            />
+                          </div>
                         </div>
                       ) : (
                         <div style={{ fontSize: '2rem', opacity: 0.3 }}>📁</div>
@@ -287,8 +326,18 @@ function App() {
                   {selectedIdea.sketch && (
                     <div style={{ marginTop: '2rem' }}>
                       <h4 className="card-title-drawn" style={{ fontSize: '1.2rem' }}>Boceto Inicial</h4>
-                      <div className="sketch-area preview" style={{ border: '1px solid #ddd', borderRadius: '10px', overflow: 'hidden', background: 'white' }}>
-                        <CanvasDraw disabled saveData={selectedIdea.sketch} canvasWidth={500} canvasHeight={300} hideGrid />
+                      <div className="sketch-area preview" style={{
+                        border: '1px solid #ddd', borderRadius: '10px', overflow: 'hidden', background: 'white', maxWidth: '700px'
+                      }}>
+                        <CanvasDraw
+                          key={`detail-${selectedIdea.id}`}
+                          disabled
+                          saveData={selectedIdea.sketch}
+                          canvasWidth={700}
+                          canvasHeight={300}
+                          hideGrid
+                          immediateLoading={true}
+                        />
                       </div>
                     </div>
                   )}
@@ -307,6 +356,12 @@ function App() {
                   <h4 className="card-title-drawn" style={{ fontSize: '1.5rem' }}>Vigilancia y Multimedia</h4>
 
                   <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
+                    <button onClick={handleAIGenerateImage} className="small-button" style={{
+                      width: '100%', marginBottom: '10px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #7dd3fc'
+                    }}>
+                      ✨ Generar Imagen con IA (Nanobanana)
+                    </button>
+
                     <label className="small-button" style={{ display: 'block', textAlign: 'center', cursor: 'pointer', marginBottom: '1rem' }}>
                       ➕ Cargar Multimedia (Video/Img)
                       <input type="file" style={{ display: 'none' }} onChange={handleFileUpload} accept="image/*,video/*" multiple />
@@ -350,12 +405,12 @@ function App() {
                 <select
                   className="input-drawn"
                   value={selectedIdea?.id || ''}
-                  onChange={(e) => openIdeaDetail(e.target.value)}
+                  onChange={(e) => openIdeaDetail(e.target.value, true)}
                   style={{ width: '100%', padding: '10px' }}
                 >
                   <option value="">-- Seleccionar proyecto --</option>
                   {portfolio.map(p => (
-                    <option key={p.id} value={p.id}>{p.title}</option>
+                    <option key={p.id} value={p.id}>{p.title} {p.subtitle ? `- ${p.subtitle}` : ''}</option>
                   ))}
                 </select>
               </div>
@@ -439,7 +494,10 @@ function App() {
             <div className="hand-drawn-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <button onClick={() => setActiveView('proteger')} className="small-button">← Atrás</button>
-                <button onClick={handleUpdateIdea} className="small-button" style={{ background: '#dcfce7' }}>Guardar Borrador 💾</button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button onClick={handleAIDraftPatent} className="small-button" style={{ background: '#bfdbfe' }}>Redactar con IA ✨</button>
+                  <button onClick={handleUpdateIdea} className="small-button" style={{ background: '#dcfce7' }}>Guardar Borrador 💾</button>
+                </div>
               </div>
               <h2 className="card-title-drawn">Borrador de Patente: {selectedIdea.title}</h2>
               <p style={{ opacity: 0.7, marginBottom: '1.5rem' }}>Este documento sirve como base para la presentación formal ante la oficina de patentes.</p>
@@ -552,7 +610,7 @@ function App() {
               <h2 className="card-title-drawn">Producir y Escalar</h2>
               <div style={{ marginBottom: '2rem' }}>
                 <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Selecciona una Idea:</label>
-                <select className="input-drawn" value={selectedIdea?.id || ''} onChange={(e) => openIdeaDetail(e.target.value)} style={{ width: '100%', padding: '10px' }}>
+                <select className="input-drawn" value={selectedIdea?.id || ''} onChange={(e) => openIdeaDetail(e.target.value, true)} style={{ width: '100%', padding: '10px' }}>
                   <option value="">-- Seleccionar proyecto --</option>
                   {portfolio.map(p => (<option key={p.id} value={p.id}>{p.title}</option>))}
                 </select>

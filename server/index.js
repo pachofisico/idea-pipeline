@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs-extra');
+const axios = require('axios');
 const agent = require('./agent');
 const { initDB, User, Idea, Finding } = require('./database');
 const storageManager = require('./storage_manager');
@@ -221,6 +222,40 @@ app.post('/api/random-innovation', async (req, res) => {
     } catch (error) {
         console.error(`[POST /api/random-innovation] ERROR:`, error);
         res.status(500).json({ error: 'Fail' });
+    }
+});
+
+app.post('/api/ideas/:id/draft-patent', async (req, res) => {
+    try {
+        const idea = await Idea.findByPk(req.params.id);
+        if (!idea) return res.status(404).json({ error: 'Not found' });
+
+        const draft = await agent.generatePatent(idea, process.env.GEMINI_API_KEY);
+        await idea.update({ patentDraft: draft });
+        res.json({ draft });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/ideas/:id/generate-image', async (req, res) => {
+    try {
+        const idea = await Idea.findByPk(req.params.id);
+        if (!idea) return res.status(404).json({ error: 'Not found' });
+
+        const prompt = await agent.generateVisualPrompt(idea, process.env.GEMINI_API_KEY);
+        const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000)}&model=flux`;
+
+        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const imgName = `ai_gen_${Date.now()}.jpg`;
+        const storagePath = path.join(__dirname, 'storage', idea.userId, idea.id, 'images');
+        await fs.ensureDir(storagePath);
+        await fs.writeFile(path.join(storagePath, imgName), response.data);
+
+        res.json({ success: true, url: `/storage/${idea.userId}/${idea.id}/images/${imgName}` });
+    } catch (error) {
+        console.error("Image Gen Error:", error);
+        res.status(500).json({ error: error.message });
     }
 });
 
