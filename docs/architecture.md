@@ -22,6 +22,7 @@ Para visualizar este diagrama, se recomienda usar la extensión **Markdown Merma
 *Fallback: Puedes copiar el código de abajo y pegarlo en el [Mermaid Live Editor](https://mermaid.live/) para verlo online.*
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 classDiagram
     class User {
         +Integer id

@@ -3,6 +3,7 @@
 Este diagrama detalla la interacción entre los diferentes módulos y capas del sistema.
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 graph TD
     subgraph Cliente
         UI[Frontend React]
