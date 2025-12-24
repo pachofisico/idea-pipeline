@@ -3,33 +3,44 @@
 Este diagrama detalla la interacción entre los diferentes módulos y capas del sistema.
 
 ```mermaid
-componentDiagram
-    [Frontend (React)] <<UI>> as UI
-    [Express Server] <<Core>> as Server
-    [Capa de Agentes] <<Logic>> as Agents
-    [PostgreSQL] <<Database>> as DB
-    [Local Disk] <<FileSystem>> as FS
+graph TD
+    subgraph Cliente
+        UI[Frontend React]
+    end
+
+    subgraph Servidor
+        Server[Express Server]
+        SM[Storage Manager]
+        DB[(PostgreSQL)]
+        FS[Local Disk]
+    end
+
+    subgraph Agentes
+        Arch[Researcher]
+        Gen[Generator]
+        Eval[Evaluator]
+    end
+
+    subgraph Externo
+        DDG[DuckDuckGo API]
+        Gemini[Google Gemini 2.0]
+        Poll[Pollinations.ai]
+    end
+
+    UI -- API Requests --> Server
+    Server --> DB
+    Server --> FS
+    Server --> SM
     
-    UI --> Server : API Requests (Axios)
+    Server -- Orquesta --> Arch
+    Server -- Orquesta --> Gen
+    Server -- Orquesta --> Eval
     
-    package "Capa de Agentes" {
-        [Researcher] as Arch
-        [Generator] as Gen
-        [Evaluator] as Eval
-    }
+    Arch -- Scraping --> DDG
+    Gen -- IA Análisis --> Gemini
+    Gen -- IA Imágenes --> Poll
     
-    Server --> Arch : Busca hallazgos
-    Server --> Gen : Genera ideas/patentes
-    Server --> Eval : Puntúa viabilidad
-    
-    Arch --> [DuckDuckGo API] : Scraping
-    Gen --> [Google Gemini 2.0] : IA Análisis
-    Gen --> [Pollinations.ai] : IA Imágenes
-    
-    Server --> DB : Sequelize (Metadatos)
-    Server --> FS : Storage Manager (Multimedia)
-    
-    UI ..> [Socket.io] : (Posible expansión)
+    UI -.-> Socket[Socket.io Expansion]
 ```
 
 ## Descripción de Componentes
